@@ -18,6 +18,27 @@ int greeting(const struct _u_request * request, struct _u_response * response, v
     return U_CALLBACK_COMPLETE;
 }
 
+int get_book_by_id(const struct _u_request * request, struct _u_response * response, void * user_data) {
+    char *id = (char *) u_map_get(request->map_url, "id");
+    if(id == NULL) {
+        printf("failed to get the book id on URL");
+        return -1;
+    }
+
+    int book_id = atoi(id);
+    _book *books = (_book *) user_data;
+    _book book = books[book_id];
+
+    json_t *response_json = json_object();
+    json_object_set_new(response_json, "name", json_string(book.name));
+    json_object_set_new(response_json, "gender", json_string(book.gender));
+    json_object_set_new(response_json, "year", json_integer(book.year));
+
+    ulfius_set_json_body_response(response, 200, response_json);
+    
+    return U_CALLBACK_COMPLETE;
+}
+
 int create_book(const struct _u_request * request, struct _u_response * response, void * user_data) {
     _book *books = (_book *) user_data;
     json_t *request_json = ulfius_get_json_body_request(request, NULL);
@@ -70,6 +91,8 @@ int main(void) {
     ulfius_init_instance(&instance, PORT, NULL, NULL);
 
     ulfius_add_endpoint_by_val(&instance, "GET", "", NULL, 0, &greeting, NULL);
+
+    ulfius_add_endpoint_by_val(&instance, "GET", NULL, "/book/@id", 0, &get_book_by_id, books);
 
     ulfius_add_endpoint_by_val(&instance, "POST", "book", "", 0, &create_book, books);
 
