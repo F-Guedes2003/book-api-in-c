@@ -6,6 +6,13 @@
 
 #define PORT 8080
 
+int book_counter = 0;
+
+typedef struct {
+    char *name, *gender;
+    int year, id;
+} _book;
+
 int greeting(const struct _u_request * request, struct _u_response * response, void * user_data) {
     ulfius_set_string_body_response(response, 200, "Hello dev!");
     return U_CALLBACK_COMPLETE;
@@ -13,6 +20,7 @@ int greeting(const struct _u_request * request, struct _u_response * response, v
 
 int main(void) {
     struct _u_instance instance;
+    _book *books = (_book *) malloc(500 * sizeof(_book));
 
     ulfius_init_instance(&instance, PORT, NULL, NULL);
 
