@@ -5,6 +5,7 @@
 #include <jansson.h>
 
 #define PORT 8080
+#define BOOK_ALLOC 5
 
 int book_counter = 0;
 
@@ -86,7 +87,7 @@ int create_book(const struct _u_request * request, struct _u_response * response
 
 int main(void) {
     struct _u_instance instance;
-    _book *books = (_book *) malloc(500 * sizeof(_book));
+    _book *books = (_book *) malloc(BOOK_ALLOC * sizeof(_book));
 
     ulfius_init_instance(&instance, PORT, NULL, NULL);
 
