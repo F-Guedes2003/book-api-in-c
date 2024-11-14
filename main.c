@@ -25,12 +25,16 @@ int get_book_by_id(const struct _u_request * request, struct _u_response * respo
         printf("failed to get the book id on URL");
         return -1;
     }
-
+    json_t *response_json = json_object();
     int book_id = atoi(id);
+    if(book_id > book_counter || book_id < 0) {
+        json_object_set_new(response_json, "message", json_string("unexistent book id!"));
+        ulfius_set_json_body_response(response, 404, response_json);
+        return U_CALLBACK_COMPLETE;
+    }
     _book *books = (_book *) user_data;
     _book book = books[book_id];
 
-    json_t *response_json = json_object();
     json_object_set_new(response_json, "name", json_string(book.name));
     json_object_set_new(response_json, "gender", json_string(book.gender));
     json_object_set_new(response_json, "year", json_integer(book.year));
