@@ -85,6 +85,41 @@ int create_book(const struct _u_request * request, struct _u_response * response
     return U_CALLBACK_COMPLETE;
 }
 
+int update_book(const struct _u_request * request, struct _u_response * response, void * user_data) {
+    char * id = (char *) u_map_get(request->map_url, "id");
+    if(id == NULL) {
+        printf("Failed to find the book by id on update_book");
+    }
+    
+    int book_id = atoi(id);
+    _book *books = (_book *) user_data;
+    json_t *request_json = ulfius_get_json_body_request(request, NULL);
+    if(request_json == NULL) {
+        printf("request Json non existent on update book");
+    } 
+
+    char *name = (char *) json_string_value(json_object_get(request_json, "name"));
+    if(name != NULL) {
+        books[book_id].name = name;
+    }
+
+    char *gender = (char *) json_string_value(json_object_get(request_json, "gender"));
+    if(gender != NULL) {
+        books[book_id].gender = gender;
+    }
+
+    int year = json_integer_value(json_object_get(request_json, "year"));
+    if(year != 0) {
+        books[book_id].year = year;
+    }
+
+    json_t *response_json = json_object();
+    json_object_set_new(response_json, "message", json_string("Book updated with success"));
+    ulfius_set_json_body_response(response, 200, request_json);
+
+    return U_CALLBACK_COMPLETE;
+}
+
 int main(void) {
     struct _u_instance instance;
     _book *books = (_book *) malloc(BOOK_ALLOC * sizeof(_book));
@@ -96,6 +131,8 @@ int main(void) {
     ulfius_add_endpoint_by_val(&instance, "GET", NULL, "/book/@id", 0, &get_book_by_id, books);
 
     ulfius_add_endpoint_by_val(&instance, "POST", "book", "", 0, &create_book, books);
+
+    ulfius_add_endpoint_by_val(&instance, "PUT", NULL, "book/@id", 0, &update_book, books);
 
     if(ulfius_start_framework(&instance) == U_OK) {
         printf("Server running on port %d...\n", instance.port);
